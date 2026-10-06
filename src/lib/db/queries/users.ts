@@ -15,6 +15,10 @@ export async function createUser(name: string) {
   return result;
 }
 
+export async function getUsers() {
+  return db.select({ name: users.name }).from(users);
+}
+
 export async function resetUsers() {
   return db.execute(sql`TRUNCATE TABLE ${users}`);
 }
