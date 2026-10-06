@@ -2,6 +2,7 @@ import {
   CommandsRegistry,
   handlerLogin,
   handlerRegister,
+  handlerReset,
   registerCommand,
   runCommand,
 } from "./commands";
@@ -13,6 +14,7 @@ async function main() {
   let registry: CommandsRegistry = {};
   registerCommand(registry, "login", handlerLogin);
   registerCommand(registry, "register", handlerRegister);
+  registerCommand(registry, "reset", handlerReset);
   if (cliArgs.length < 1) {
     console.error(`Please provide a command to run`);
     process.exit(1); // No command provided
