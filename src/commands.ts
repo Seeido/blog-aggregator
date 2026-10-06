@@ -1,13 +1,31 @@
 import { setUser } from "./config";
+import { createUser, getUser } from "./lib/db/queries/users";
 
-type CommandHandler = (cmdName: string, ...args: string[]) => void;
+type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
-export function handlerLogin(cmdName: string, ...args: string[]) {
+export async function handlerLogin(cmdName: string, ...args: string[]) {
   if (args.length < 1) {
     throw new Error("username is required to login");
   }
-  setUser(args[0]);
-  console.log(`User ${args[0]} has been set!`);
+  const username = args[0];
+  if (!(await getUser(username))) {
+    throw new Error("user doesn't exist");
+  }
+  setUser(username);
+  console.log(`Logged in as ${username}!`);
+}
+
+export async function handlerRegister(cmdName: string, ...args: string[]) {
+  if (args.length < 1) {
+    throw new Error("a username is required to register");
+  }
+  const username = args[0];
+  if (await getUser(username)) {
+    throw new Error("user already exists");
+  }
+  await createUser(username);
+  setUser(username);
+  console.log(`User ${username} has been registered!`);
 }
 
 export function registerCommand(
@@ -18,7 +36,7 @@ export function registerCommand(
   registry[cmdName] = handler;
 }
 
-export function runCommand(
+export async function runCommand(
   registry: CommandsRegistry,
   cmdName: string,
   ...args: string[]
