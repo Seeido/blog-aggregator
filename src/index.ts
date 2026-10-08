@@ -1,5 +1,6 @@
 import {
   CommandsRegistry,
+  handlerAgg,
   handlerLogin,
   handlerRegister,
   handlerReset,
@@ -17,6 +18,7 @@ async function main() {
   registerCommand(registry, "register", handlerRegister);
   registerCommand(registry, "users", handlerUsers);
   registerCommand(registry, "reset", handlerReset);
+  registerCommand(registry, "agg", handlerAgg);
   if (cliArgs.length < 1) {
     console.error(`Please provide a command to run`);
     process.exit(1); // No command provided
