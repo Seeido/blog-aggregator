@@ -1,5 +1,8 @@
 import { pgTable, timestamp, uuid, text } from "drizzle-orm/pg-core";
 
+export type User = typeof users.$inferSelect;
+export type Feed = typeof feeds.$inferSelect;
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
