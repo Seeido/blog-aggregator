@@ -1,11 +1,7 @@
 import { readConfig, setUser } from "./config";
 import { createFeed } from "./lib/db/queries/feeds";
-import {
-  createUser,
-  getUser,
-  getUsers,
-  resetUsers,
-} from "./lib/db/queries/users";
+import { resetDatabase } from "./lib/db/queries/reset";
+import { createUser, getUser, getUsers } from "./lib/db/queries/users";
 import { Feed, User } from "./lib/db/schema";
 import { fetchFeed } from "./lib/rss";
 
@@ -46,8 +42,8 @@ export async function handlerUsers(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerReset(cmdName: string, ...args: string[]) {
-  await resetUsers();
-  console.log("Table reset successfully!");
+  await resetDatabase();
+  console.log("Database reset successfully!");
 }
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
