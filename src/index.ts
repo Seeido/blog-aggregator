@@ -32,6 +32,9 @@ async function main() {
     await runCommand(registry, command, ...args);
   } catch (error) {
     console.error(`${error}`);
+    if (error instanceof Error && error.cause instanceof Error) {
+      console.error(`Cause: ${error.cause.message}`);
+    }
     process.exit(1);
   }
 
