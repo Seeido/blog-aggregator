@@ -1,10 +1,12 @@
 import { readConfig, setUser } from "./config";
+import { createFeed } from "./lib/db/queries/feeds";
 import {
   createUser,
   getUser,
   getUsers,
   resetUsers,
 } from "./lib/db/queries/users";
+import { Feed, User } from "./lib/db/schema";
 import { fetchFeed } from "./lib/rss";
 
 type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
@@ -51,6 +53,36 @@ export async function handlerReset(cmdName: string, ...args: string[]) {
 export async function handlerAgg(cmdName: string, ...args: string[]) {
   const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
   console.log(JSON.stringify(feed, null, 2));
+}
+
+export async function handlerAddfeed(cmdName: string, ...args: string[]) {
+  if (args.length !== 2) {
+    throw new Error("feed name and url are required to add feed");
+  }
+  const name = args[0];
+  const url = args[1];
+  const currentUser = readConfig().currentUserName;
+  if (!currentUser) {
+    throw new Error("not logged in");
+  }
+  const user = await getUser(currentUser);
+  if (!user) {
+    throw new Error("logged in user doesn't exist");
+  }
+
+  const feed = await createFeed(name, url, user.id);
+
+  printFeed(feed, user);
+}
+
+function printFeed(feed: Feed, user: User) {
+  const message = `Feed created:
+  ID:       ${feed.id}
+  Name:     ${feed.name}
+  URL:      ${feed.url}
+  Added by: ${user.name}
+  Created:  ${feed.createdAt}`;
+  console.log(message);
 }
 
 export function registerCommand(
