@@ -9,6 +9,7 @@ import {
   handlerRegister,
   handlerReset,
   handlerUsers,
+  middlewareLoggedIn,
   registerCommand,
   runCommand,
 } from "./commands";
@@ -23,10 +24,10 @@ async function main() {
   registerCommand(registry, "users", handlerUsers);
   registerCommand(registry, "reset", handlerReset);
   registerCommand(registry, "agg", handlerAgg);
-  registerCommand(registry, "addfeed", handlerAddfeed);
+  registerCommand(registry, "addfeed", middlewareLoggedIn(handlerAddfeed));
   registerCommand(registry, "feeds", handlerFeeds);
-  registerCommand(registry, "follow", handlerFollow);
-  registerCommand(registry, "following", handlerFollowing);
+  registerCommand(registry, "follow", middlewareLoggedIn(handlerFollow));
+  registerCommand(registry, "following", middlewareLoggedIn(handlerFollowing));
   if (cliArgs.length < 1) {
     console.error(`Please provide a command to run`);
     process.exit(1); // No command provided

@@ -14,6 +14,28 @@ import { Feed, User } from "./lib/db/schema";
 import { fetchFeed } from "./lib/rss";
 
 type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
+type UserCommandHandler = (
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) => Promise<void>;
+
+export function middlewareLoggedIn(
+  handler: UserCommandHandler,
+): CommandHandler {
+  return async (cmdName, ...args) => {
+    const currentUser = readConfig().currentUserName;
+    if (!currentUser) {
+      throw new Error("not logged in");
+    }
+    const user = await getUser(currentUser);
+    if (!user) {
+      throw new Error("logged in user doesn't exist");
+    }
+
+    await handler(cmdName, user, ...args);
+  };
+}
 
 export async function handlerLogin(_cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
@@ -59,13 +81,16 @@ export async function handlerAgg() {
   console.log(JSON.stringify(feed, null, 2));
 }
 
-export async function handlerAddfeed(_cmdName: string, ...args: string[]) {
+export async function handlerAddfeed(
+  _cmdName: string,
+  user: User,
+  ...args: string[]
+) {
   if (args.length !== 2) {
     throw new Error("feed name and url are required to add feed");
   }
   const name = args[0];
   const url = args[1];
-  const user = await getCurrentUser();
 
   const feed = await createFeed(name, url, user.id);
   await createFeedFollow(user.id, feed.id);
@@ -80,12 +105,15 @@ export async function handlerFeeds() {
   }
 }
 
-export async function handlerFollow(_cmdName: string, ...args: string[]) {
+export async function handlerFollow(
+  _cmdName: string,
+  user: User,
+  ...args: string[]
+) {
   if (args.length !== 1) {
     throw new Error("one url is required, to follow");
   }
   const url = args[0];
-  const user = await getCurrentUser();
   const feed = await getFeedByUrl(url);
   if (!feed) {
     throw new Error("feed isn't available");
@@ -94,25 +122,12 @@ export async function handlerFollow(_cmdName: string, ...args: string[]) {
   console.log(`${user.name} now follows ${feed.name}!`);
 }
 
-export async function handlerFollowing() {
-  const user = await getCurrentUser();
+export async function handlerFollowing(_cmdName: string, user: User) {
   const feedFollows = await getFeedFollowsForUser(user.id);
   const formattedFeeds = feedFollows.map(
     (feed) => `- ${feed.feedName} (${feed.feedUrl})`,
   );
   console.log(`Feeds followed by ${user.name}:\n${formattedFeeds.join("\n")}`);
-}
-
-async function getCurrentUser() {
-  const currentUser = readConfig().currentUserName;
-  if (!currentUser) {
-    throw new Error("not logged in");
-  }
-  const user = await getUser(currentUser);
-  if (!user) {
-    throw new Error("logged in user doesn't exist");
-  }
-  return user;
 }
 
 function printFeed(feed: Feed, user: User) {
