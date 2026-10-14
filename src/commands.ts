@@ -7,7 +7,7 @@ import { fetchFeed } from "./lib/rss";
 
 type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
-export async function handlerLogin(cmdName: string, ...args: string[]) {
+export async function handlerLogin(_cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
     throw new Error("username is required to login");
   }
@@ -19,7 +19,7 @@ export async function handlerLogin(cmdName: string, ...args: string[]) {
   console.log(`Logged in as ${username}!`);
 }
 
-export async function handlerRegister(cmdName: string, ...args: string[]) {
+export async function handlerRegister(_cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
     throw new Error("a username is required to register");
   }
@@ -32,7 +32,7 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
   console.log(`User ${username} has been registered!`);
 }
 
-export async function handlerUsers(cmdName: string, ...args: string[]) {
+export async function handlerUsers() {
   const currentUser = readConfig().currentUserName;
   const users = await getUsers();
   for (const user of users) {
@@ -41,17 +41,17 @@ export async function handlerUsers(cmdName: string, ...args: string[]) {
   }
 }
 
-export async function handlerReset(cmdName: string, ...args: string[]) {
+export async function handlerReset() {
   await resetDatabase();
   console.log("Database reset successfully!");
 }
 
-export async function handlerAgg(cmdName: string, ...args: string[]) {
+export async function handlerAgg() {
   const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
   console.log(JSON.stringify(feed, null, 2));
 }
 
-export async function handlerAddfeed(cmdName: string, ...args: string[]) {
+export async function handlerAddfeed(_cmdName: string, ...args: string[]) {
   if (args.length !== 2) {
     throw new Error("feed name and url are required to add feed");
   }
