@@ -68,6 +68,7 @@ export async function handlerAddfeed(_cmdName: string, ...args: string[]) {
   const user = await getCurrentUser();
 
   const feed = await createFeed(name, url, user.id);
+  await createFeedFollow(user.id, feed.id);
 
   printFeed(feed, user);
 }
