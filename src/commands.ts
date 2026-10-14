@@ -57,14 +57,7 @@ export async function handlerAddfeed(_cmdName: string, ...args: string[]) {
   }
   const name = args[0];
   const url = args[1];
-  const currentUser = readConfig().currentUserName;
-  if (!currentUser) {
-    throw new Error("not logged in");
-  }
-  const user = await getUser(currentUser);
-  if (!user) {
-    throw new Error("logged in user doesn't exist");
-  }
+  const user = await getCurrentUser();
 
   const feed = await createFeed(name, url, user.id);
 
@@ -76,6 +69,18 @@ export async function handlerFeeds() {
   for (const row of rows) {
     console.log(`- ${row.feedName} (${row.feedUrl}) added by ${row.username}`);
   }
+}
+
+async function getCurrentUser() {
+  const currentUser = readConfig().currentUserName;
+  if (!currentUser) {
+    throw new Error("not logged in");
+  }
+  const user = await getUser(currentUser);
+  if (!user) {
+    throw new Error("logged in user doesn't exist");
+  }
+  return user;
 }
 
 function printFeed(feed: Feed, user: User) {
