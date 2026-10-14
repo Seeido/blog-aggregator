@@ -1,5 +1,10 @@
 import { readConfig, setUser } from "./config";
-import { createFeed, getFeedsWithUsernames } from "./lib/db/queries/feeds";
+import { createFeedFollow } from "./lib/db/queries/feedFollows";
+import {
+  createFeed,
+  getFeedByUrl,
+  getFeedsWithUsernames,
+} from "./lib/db/queries/feeds";
 import { resetDatabase } from "./lib/db/queries/reset";
 import { createUser, getUser, getUsers } from "./lib/db/queries/users";
 import { Feed, User } from "./lib/db/schema";
@@ -69,6 +74,20 @@ export async function handlerFeeds() {
   for (const row of rows) {
     console.log(`- ${row.feedName} (${row.feedUrl}) added by ${row.username}`);
   }
+}
+
+export async function handlerFollow(_cmdName: string, ...args: string[]) {
+  if (args.length !== 1) {
+    throw new Error("one url is required, to follow");
+  }
+  const url = args[0];
+  const user = await getCurrentUser();
+  const feed = await getFeedByUrl(url);
+  if (!feed) {
+    throw new Error("feed isn't available");
+  }
+  await createFeedFollow(user.id, feed.id);
+  console.log(`${user.name} now follows ${feed.name}!`);
 }
 
 async function getCurrentUser() {

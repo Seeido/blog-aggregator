@@ -3,6 +3,7 @@ import {
   handlerAddfeed,
   handlerAgg,
   handlerFeeds,
+  handlerFollow,
   handlerLogin,
   handlerRegister,
   handlerReset,
@@ -23,6 +24,7 @@ async function main() {
   registerCommand(registry, "agg", handlerAgg);
   registerCommand(registry, "addfeed", handlerAddfeed);
   registerCommand(registry, "feeds", handlerFeeds);
+  registerCommand(registry, "follow", handlerFollow);
   if (cliArgs.length < 1) {
     console.error(`Please provide a command to run`);
     process.exit(1); // No command provided
