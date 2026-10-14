@@ -15,6 +15,13 @@
       "when": 1791920187590,
       "tag": "0001_closed_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791968110830,
+      "tag": "0002_familiar_night_nurse",
+      "breakpoints": true
     }
   ]
 }
