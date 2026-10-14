@@ -1,6 +1,7 @@
 import { readConfig, setUser } from "./config";
 import {
   createFeedFollow,
+  deleteFeedFollow,
   getFeedFollowsForUser,
 } from "./lib/db/queries/feedFollows";
 import {
@@ -138,6 +139,23 @@ function printFeed(feed: Feed, user: User) {
   Added by: ${user.name}
   Created:  ${feed.createdAt}`;
   console.log(message);
+}
+
+export async function handlerUnfollow(
+  _cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  if (args.length !== 1) {
+    throw new Error("one url is required, to unfollow");
+  }
+  const url = args[0];
+  const feed = await getFeedByUrl(url);
+  if (!feed) {
+    throw new Error("feed isn't available");
+  }
+  await deleteFeedFollow(user.id, feed.id);
+  console.log(`${user.name} unfollowed ${feed.name}!`);
 }
 
 export function registerCommand(
