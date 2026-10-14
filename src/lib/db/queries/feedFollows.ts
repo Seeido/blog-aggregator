@@ -23,3 +23,15 @@ export async function createFeedFollow(userId: string, feedId: string) {
     .innerJoin(feeds, eq(feedFollows.feedId, feeds.id))
     .where(eq(feedFollows.id, result.id));
 }
+
+export async function getFeedFollowsForUser(userId: string) {
+  return db
+    .select({
+      feedUrl: feeds.url,
+      feedName: feeds.name,
+    })
+    .from(feedFollows)
+    .innerJoin(users, eq(feedFollows.userId, users.id))
+    .innerJoin(feeds, eq(feedFollows.feedId, feeds.id))
+    .where(eq(feedFollows.userId, userId));
+}

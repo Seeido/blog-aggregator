@@ -4,6 +4,7 @@ import {
   handlerAgg,
   handlerFeeds,
   handlerFollow,
+  handlerFollowing,
   handlerLogin,
   handlerRegister,
   handlerReset,
@@ -25,6 +26,7 @@ async function main() {
   registerCommand(registry, "addfeed", handlerAddfeed);
   registerCommand(registry, "feeds", handlerFeeds);
   registerCommand(registry, "follow", handlerFollow);
+  registerCommand(registry, "following", handlerFollowing);
   if (cliArgs.length < 1) {
     console.error(`Please provide a command to run`);
     process.exit(1); // No command provided

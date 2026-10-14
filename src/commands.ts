@@ -1,5 +1,8 @@
 import { readConfig, setUser } from "./config";
-import { createFeedFollow } from "./lib/db/queries/feedFollows";
+import {
+  createFeedFollow,
+  getFeedFollowsForUser,
+} from "./lib/db/queries/feedFollows";
 import {
   createFeed,
   getFeedByUrl,
@@ -88,6 +91,15 @@ export async function handlerFollow(_cmdName: string, ...args: string[]) {
   }
   await createFeedFollow(user.id, feed.id);
   console.log(`${user.name} now follows ${feed.name}!`);
+}
+
+export async function handlerFollowing() {
+  const user = await getCurrentUser();
+  const feedFollows = await getFeedFollowsForUser(user.id);
+  const formattedFeeds = feedFollows.map(
+    (feed) => `- ${feed.feedName} (${feed.feedUrl})`,
+  );
+  console.log(`Feeds followed by ${user.name}:\n${formattedFeeds.join("\n")}`);
 }
 
 async function getCurrentUser() {
