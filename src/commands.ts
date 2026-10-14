@@ -1,5 +1,5 @@
 import { readConfig, setUser } from "./config";
-import { createFeed } from "./lib/db/queries/feeds";
+import { createFeed, getFeedsWithUsernames } from "./lib/db/queries/feeds";
 import { resetDatabase } from "./lib/db/queries/reset";
 import { createUser, getUser, getUsers } from "./lib/db/queries/users";
 import { Feed, User } from "./lib/db/schema";
@@ -69,6 +69,13 @@ export async function handlerAddfeed(_cmdName: string, ...args: string[]) {
   const feed = await createFeed(name, url, user.id);
 
   printFeed(feed, user);
+}
+
+export async function handlerFeeds() {
+  const rows = await getFeedsWithUsernames();
+  for (const row of rows) {
+    console.log(`- ${row.feedName} (${row.feedUrl}) added by ${row.username}`);
+  }
 }
 
 function printFeed(feed: Feed, user: User) {
