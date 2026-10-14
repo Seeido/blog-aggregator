@@ -8,6 +8,8 @@ import {
   createFeed,
   getFeedByUrl,
   getFeedsWithUsernames,
+  getNextFeedToFetch,
+  markFeedFetched,
 } from "./lib/db/queries/feeds";
 import { resetDatabase } from "./lib/db/queries/reset";
 import { createUser, getUser, getUsers } from "./lib/db/queries/users";
@@ -77,9 +79,53 @@ export async function handlerReset() {
   console.log("Database reset successfully!");
 }
 
-export async function handlerAgg() {
-  const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
-  console.log(JSON.stringify(feed, null, 2));
+export async function handlerAgg(_cmdName: string, ...args: string[]) {
+  if (args.length !== 1) {
+    throw new Error(" please enter valid duration");
+  }
+  const timeBetweenReqs = args[0];
+  const duration = parseDuration(timeBetweenReqs);
+  if (duration < 5 * 1000) {
+    throw new Error("duration between requests should be at least 5s");
+  }
+  console.log(`Collecting feeds every ${timeBetweenReqs}`);
+  scrapeFeeds().catch(handleError);
+
+  const interval = setInterval(() => {
+    scrapeFeeds().catch(handleError);
+  }, duration);
+
+  await new Promise<void>((resolve) => {
+    process.on("SIGINT", () => {
+      console.log("Shutting down feed aggregator...");
+      clearInterval(interval);
+      resolve();
+    });
+  });
+}
+
+function handleError(error: unknown) {
+  console.error(`${error}`);
+  if (error instanceof Error && error.cause instanceof Error) {
+    console.error(`Cause: ${error.cause.message}`);
+  }
+}
+
+function parseDuration(durationStr: string): number {
+  const regex = /^(\d+)(ms|s|m|h)$/;
+  const match = durationStr.match(regex);
+  if (!match) {
+    throw new Error("invalid duration form");
+  }
+  const multipliers = {
+    ms: 1,
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+  };
+  const number = parseInt(match[1]);
+  const unit = match[2] as keyof typeof multipliers;
+  return number * multipliers[unit];
 }
 
 export async function handlerAddfeed(
@@ -156,6 +202,20 @@ export async function handlerUnfollow(
   }
   await deleteFeedFollow(user.id, feed.id);
   console.log(`${user.name} unfollowed ${feed.name}!`);
+}
+
+async function scrapeFeeds() {
+  const feed = await getNextFeedToFetch();
+  if (!feed) {
+    throw new Error("no feeds to fetch");
+  }
+  await markFeedFetched(feed.id);
+  const result = await fetchFeed(feed.url);
+  console.log(`Posts from ${feed.name}:`);
+  for (const item of result.channel.item) {
+    console.log(`- ${item.title}`);
+  }
+  console.log();
 }
 
 export function registerCommand(
