@@ -8,7 +8,7 @@ import { fetchFeed } from "./lib/rss";
 type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
-  if (args.length < 1) {
+  if (args.length !== 1) {
     throw new Error("username is required to login");
   }
   const username = args[0];
@@ -20,7 +20,7 @@ export async function handlerLogin(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerRegister(cmdName: string, ...args: string[]) {
-  if (args.length < 1) {
+  if (args.length !== 1) {
     throw new Error("a username is required to register");
   }
   const username = args[0];
