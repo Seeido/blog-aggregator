@@ -11,6 +11,7 @@ import {
   getNextFeedToFetch,
   markFeedFetched,
 } from "./lib/db/queries/feeds";
+import { createPosts } from "./lib/db/queries/posts";
 import { resetDatabase } from "./lib/db/queries/reset";
 import { createUser, getUser, getUsers } from "./lib/db/queries/users";
 import { Feed, User } from "./lib/db/schema";
@@ -210,12 +211,27 @@ async function scrapeFeeds() {
     throw new Error("no feeds to fetch");
   }
   await markFeedFetched(feed.id);
+  console.log(`Fetching ${feed.name}...`);
   const result = await fetchFeed(feed.url);
-  console.log(`Posts from ${feed.name}:`);
-  for (const item of result.channel.item) {
-    console.log(`- ${item.title}`);
+
+  const newPosts = result.channel.item.map((item) => ({
+    title: item.title,
+    url: item.link,
+    description: item.description,
+    publishedAt: parseDate(item.pubDate),
+    feedId: feed.id,
+  }));
+  const returnedPosts = await createPosts(newPosts);
+
+  console.log(`Saved ${returnedPosts.length} new posts from ${feed.name}!`);
+}
+
+function parseDate(dateStr: string) {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    return null;
   }
-  console.log();
+  return date;
 }
 
 export function registerCommand(
