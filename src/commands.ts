@@ -11,7 +11,7 @@ import {
   getNextFeedToFetch,
   markFeedFetched,
 } from "./lib/db/queries/feeds";
-import { createPosts } from "./lib/db/queries/posts";
+import { createPosts, getPostsForUser } from "./lib/db/queries/posts";
 import { resetDatabase } from "./lib/db/queries/reset";
 import { createUser, getUser, getUsers } from "./lib/db/queries/users";
 import { Feed, User } from "./lib/db/schema";
@@ -203,6 +203,46 @@ export async function handlerUnfollow(
   }
   await deleteFeedFollow(user.id, feed.id);
   console.log(`${user.name} unfollowed ${feed.name}!`);
+}
+
+export async function handlerBrowse(
+  _cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  let limit;
+  if (args.length === 0) {
+    limit = 2;
+  } else if (args.length === 1) {
+    limit = parseLimit(args[0]);
+  } else {
+    throw new Error(
+      "please provide a valid limit or leave empty for a default of 2",
+    );
+  }
+  const posts = await getPostsForUser(user.id, limit);
+  for (const post of posts) {
+    let date = "N/A";
+    if (post.publishedAt) {
+      date = post.publishedAt.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "2-digit",
+      });
+    }
+
+    console.log(
+      `- ${post.title} from ${post.feedName} (${post.url}) on ${date}`,
+    );
+  }
+}
+
+function parseLimit(limit: string): number {
+  const result = Number(limit);
+  if (Number.isInteger(result) && result > 0) {
+    return result;
+  }
+  throw new Error("invalid limit provided");
 }
 
 async function scrapeFeeds() {
